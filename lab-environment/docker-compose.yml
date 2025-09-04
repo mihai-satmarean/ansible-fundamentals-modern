@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # Ansible Control Node with modern tooling
+  ansible-control:
+    image: quay.io/ansible/ansible-runner:latest
+    container_name: ansible-control
+    hostname: control-node
+    ports:
+      - "8080:8080"     # Web UI access
+      - "2200:22"       # SSH access
+    volumes:
+      - ./playbooks:/home/runner/playbooks
+      - ./inventory:/home/runner/inventory
+      - ./scenarios:/home/runner/scenarios
+      - ansible-home:/home/runner
+    environment:
+      - ANSIBLE_HOST_KEY_CHECKING=False
+      - ANSIBLE_STDOUT_CALLBACK=yaml
+    networks:
+      - ansible-lab
+    depends_on:
+      - web1
+      - web2
+      - db1
+    command: >
+      sh -c "
+        ssh-keygen -t rsa -N '' -f /home/runner/.ssh/id_rsa &&
+        ansible-galaxy collection install community.general ansible.posix &&
+        tail -f /dev/null
+      "
+
+  # Web Servers for practice
+  web1:
+    image: ubuntu:22.04
+    container_name: web1
+    hostname: web1.ansible.lab
+    networks:
+      - ansible-lab
+    volumes:
+      - ./ssh-keys:/tmp/ssh-keys
+    command: >
+      sh -c "
+        apt-get update &&
+        apt-get install -y openssh-server python3 &&
+        mkdir -p /var/run/sshd &&
+        echo 'root:ansible123' | chpasswd &&
+        echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config &&
+        mkdir -p /root/.ssh &&
+        cp /tmp/ssh-keys/id_rsa.pub /root/.ssh/authorized_keys &&
+        chmod 600 /root/.ssh/authorized_keys &&
+        /usr/sbin/sshd -D
+      "
+
+  web2:
+    image: ubuntu:22.04
+    container_name: web2  
+    hostname: web2.ansible.lab
+    networks:
+      - ansible-lab
+    volumes:
+      - ./ssh-keys:/tmp/ssh-keys
+    command: >
+      sh -c "
+        apt-get update &&
+        apt-get install -y openssh-server python3 &&
+        mkdir -p /var/run/sshd &&
+        echo 'root:ansible123' | chpasswd &&
+        echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config &&
+        mkdir -p /root/.ssh &&
+        cp /tmp/ssh-keys/id_rsa.pub /root/.ssh/authorized_keys &&
+        chmod 600 /root/.ssh/authorized_keys &&
+        /usr/sbin/sshd -D
+      "
+
+  # Database Server  
+  db1:
+    image: ubuntu:22.04
+    container_name: db1
+    hostname: db1.ansible.lab
+    networks:
+      - ansible-lab
+    volumes:
+      - ./ssh-keys:/tmp/ssh-keys
+    command: >
+      sh -c "
+        apt-get update &&
+        apt-get install -y openssh-server python3 mysql-server &&
+        mkdir -p /var/run/sshd &&
+        echo 'root:ansible123' | chpasswd &&
+        echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config &&
+        mkdir -p /root/.ssh &&
+        cp /tmp/ssh-keys/id_rsa.pub /root/.ssh/authorized_keys &&
+        chmod 600 /root/.ssh/authorized_keys &&
+        service mysql start &&
+        /usr/sbin/sshd -D
+      "
+
+  # Load Balancer
+  lb1:
+    image: nginx:alpine
+    container_name: lb1
+    hostname: lb1.ansible.lab
+    ports:
+      - "8081:80"
+    networks:
+      - ansible-lab
+    volumes:
+      - ./nginx-config:/etc/nginx/conf.d
+
+volumes:
+  ansible-home:
+
+networks:
+  ansible-lab:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
