@@ -123,7 +123,7 @@ cat > step3-copy.yml << 'EOF'
           </head>
           <body>
               <div class="content">
-                  <h1 class="header">Ansible Fundamentals Training</h1>
+                  <h1 class="header">{{ page_title }}</h1>
                   <h2 class="highlight">September 9-10, 2025</h2>
                   <h3>Welcome to ING Bank Ansible Training!</h3>
                   
