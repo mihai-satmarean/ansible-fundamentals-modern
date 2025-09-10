@@ -48,12 +48,12 @@ Create `module_deep_dive.yml`:
 ```yaml
 ---
 - name: Deep Dive into Ansible Modules
-  hosts: web_servers
+  hosts: aws
   become: yes
   vars:
     app_name: "webapp"
     app_user: "webuser"
-    app_group: "webgroup"
+    app_group: "webadmin"
     config_dir: "/etc/webapp"
     
   tasks:
@@ -203,7 +203,6 @@ Create `module_deep_dive.yml`:
         group: root
         mode: "0644"
         backup: yes
-        # For virtual host files, we validate the main nginx config after template is created
       register: nginx_template
       notify: restart nginx
       
@@ -331,7 +330,7 @@ Create `idempotency_test.yml`:
 ```yaml
 ---
 - name: Idempotency Testing and Demonstration
-  hosts: web_servers
+  hosts: aws
   become: yes
   vars:
     test_app: "idempotency-test"
