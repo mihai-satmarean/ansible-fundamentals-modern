@@ -58,16 +58,22 @@ all:
       hosts:
         51.20.81.242:
           ansible_user: ubuntu
+      vars:
+        server_role: "web"
     
     databases:
       hosts:
         51.20.83.179:
           ansible_user: ubuntu
+      vars:
+        server_role: "database"
     
     loadbalancers:
       hosts:
         51.20.83.179:
           ansible_user: ubuntu
+      vars:
+        server_role: "loadbalancer"
 ```
 
 ## Lab 1: Ansible Vault Fundamentals
