@@ -126,6 +126,17 @@ tasks:
 
 Instead of writing the same task many times, use loops.
 
+```mermaid
+flowchart TD
+    START([Start Loop]) --> ITEM1[Process folder1]
+    ITEM1 --> ITEM2[Process folder2]
+    ITEM2 --> ITEM3[Process folder3]
+    ITEM3 --> END([Loop Complete])
+    
+    classDef loopItem fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    class ITEM1,ITEM2,ITEM3 loopItem
+```
+
 ### Basic Loop
 
 ```yaml
@@ -140,6 +151,16 @@ Instead of writing the same task many times, use loops.
 ```
 
 ### Loop with Dictionary
+
+```mermaid
+flowchart TD
+    START([Start Dictionary Loop]) --> USER1[Create john<br/>group: admin<br/>shell: /bin/bash]
+    USER1 --> USER2[Create alice<br/>group: users<br/>shell: /bin/zsh]
+    USER2 --> END([All Users Created])
+    
+    classDef userTask fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    class USER1,USER2 userTask
+```
 
 ```yaml
 - name: Create users with details
@@ -156,6 +177,23 @@ Instead of writing the same task many times, use loops.
 
 Run tasks only when certain conditions are true.
 
+```mermaid
+flowchart TD
+    START([Start Task]) --> CHECK{Is system Ubuntu?}
+    CHECK -->|Yes| INSTALL[Install nginx]
+    CHECK -->|No| SKIP[Skip task]
+    INSTALL --> END([Task Complete])
+    SKIP --> END
+    
+    classDef condition fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef action fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef skip fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class CHECK condition
+    class INSTALL action
+    class SKIP skip
+```
+
 ### Simple Condition
 
 ```yaml
@@ -167,6 +205,25 @@ Run tasks only when certain conditions are true.
 ```
 
 ### Multiple Conditions
+
+```mermaid
+flowchart TD
+    START([Start Task]) --> CHECK1{Is system Ubuntu?}
+    CHECK1 -->|No| SKIP[Skip task]
+    CHECK1 -->|Yes| CHECK2{Memory > 2GB?}
+    CHECK2 -->|No| SKIP
+    CHECK2 -->|Yes| INSTALL[Install mysql-server]
+    INSTALL --> END([Task Complete])
+    SKIP --> END
+    
+    classDef condition fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef action fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef skip fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class CHECK1,CHECK2 condition
+    class INSTALL action
+    class SKIP skip
+```
 
 ```yaml
 - name: Install heavy software
@@ -209,6 +266,27 @@ INSTALL htop
   when: ansible_distribution == "Ubuntu"
 ```
 
+**Flow diagram:**
+```mermaid
+flowchart TD
+    START([Start]) --> CHECK{Is Ubuntu?}
+    CHECK -->|No| SKIP[Skip all packages]
+    CHECK -->|Yes| LOOP([Start Loop])
+    LOOP --> GIT[Install git]
+    GIT --> VIM[Install vim]
+    VIM --> HTOP[Install htop]
+    HTOP --> END([Complete])
+    SKIP --> END
+    
+    classDef condition fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef action fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef skip fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class CHECK condition
+    class GIT,VIM,HTOP action
+    class SKIP skip
+```
+
 ### Exercise 2
 **Idea:** "Create 3 directories: logs, configs, and backups with proper permissions"
 
@@ -240,6 +318,18 @@ tasks:
       state: directory
       mode: '0755'
     loop: "{{ directories }}"
+```
+
+**Flow diagram:**
+```mermaid
+flowchart TD
+    START([Start Loop]) --> DIR1[Create /var/logs<br/>mode: 755]
+    DIR1 --> DIR2[Create /var/configs<br/>mode: 755]
+    DIR2 --> DIR3[Create /var/backups<br/>mode: 755]
+    DIR3 --> END([All Directories Created])
+    
+    classDef dirTask fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    class DIR1,DIR2,DIR3 dirTask
 ```
 
 ## Common Patterns
@@ -280,6 +370,24 @@ tasks:
 ```
 
 ### Pattern 3: Conditional Installation
+
+```mermaid
+flowchart TD
+    START([Start Loop]) --> PKG1{nginx: Is webserver?}
+    PKG1 -->|Yes| INSTALL1[Install nginx]
+    PKG1 -->|No| PKG2{mysql: Is database?}
+    INSTALL1 --> PKG2
+    PKG2 -->|Yes| INSTALL2[Install mysql-server]
+    PKG2 -->|No| END([Loop Complete])
+    INSTALL2 --> END
+    
+    classDef condition fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef action fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    
+    class PKG1,PKG2 condition
+    class INSTALL1,INSTALL2 action
+```
+
 ```yaml
 vars:
   packages:
@@ -330,6 +438,29 @@ when: condition_is_true
 ```
 
 ### Combining All Three
+
+```mermaid
+flowchart TD
+    START([Start]) --> VARS[Variables: packages = git, vim]
+    VARS --> CHECK{Is Ubuntu?}
+    CHECK -->|No| SKIP[Skip entire task]
+    CHECK -->|Yes| LOOP([Start Loop])
+    LOOP --> GIT[Install git]
+    GIT --> VIM[Install vim]
+    VIM --> END([Complete])
+    SKIP --> END
+    
+    classDef variable fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef condition fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef action fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef skip fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class VARS variable
+    class CHECK condition
+    class GIT,VIM action
+    class SKIP skip
+```
+
 ```yaml
 vars:
   packages: [git, vim]
