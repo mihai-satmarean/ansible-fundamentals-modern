@@ -203,7 +203,6 @@ Create `module_deep_dive.yml`:
         group: root
         mode: "0644"
         backup: yes
-        validate: "nginx -t -c /etc/nginx/nginx.conf"
       register: nginx_template
       notify: restart nginx
       
