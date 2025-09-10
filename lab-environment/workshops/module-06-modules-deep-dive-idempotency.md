@@ -494,13 +494,21 @@ Create `advanced_idempotent_patterns.yml`:
 ```yaml
 ---
 - name: Advanced Idempotent Patterns and Best Practices
-  hosts: web_servers
+  hosts: aws
   become: yes
   vars:
     webapp_name: "advanced-webapp"
     webapp_version: "2.1.0"
     
   tasks:
+    # PREREQUISITE: Ensure application directory exists
+    - name: "PREREQUISITE: Ensure application directory exists"
+      file:
+        path: "/opt/{{ webapp_name }}"
+        state: directory
+        mode: "0755"
+      register: app_dir_ensure
+      
     # PATTERN 1: Idempotent Shell Commands
     - name: "PATTERN 1: Check if application is installed"
       stat:
@@ -556,21 +564,28 @@ Create `advanced_idempotent_patterns.yml`:
             content: "{{ config_content }}"
             dest: "/opt/{{ webapp_name }}/config.conf"
             backup: yes
+          register: config_deploy_result
             
         - name: "Update configuration hash"
           copy:
             content: "{{ config_hash }}"
             dest: "/opt/{{ webapp_name }}/config.hash"
+          register: hash_update_result
             
         - name: "Restart service due to config change"
           debug:
             msg: "Configuration changed - service would be restarted here"
+          register: service_restart_result
             
       when: >
         not existing_hash_file.stat.exists or
         (existing_hash is defined and 
          (existing_hash.content | b64decode | trim) != config_hash)
-      register: config_updated
+         
+    - name: "Set config_updated fact"
+      set_fact:
+        config_updated: "{{ config_deploy_result is defined and config_deploy_result.changed }}"
+      when: config_deploy_result is defined
       
     # PATTERN 3: Idempotent Database Operations
     - name: "PATTERN 3: Create database schema (idempotent)"
@@ -591,15 +606,26 @@ Create `advanced_idempotent_patterns.yml`:
       changed_when: "'changed' in schema_result.stdout"
       
     # PATTERN 4: Idempotent File Downloads
-    - name: "PATTERN 4: Download file only if changed"
-      get_url:
-        url: "https://httpbin.org/json"
+    - name: "PATTERN 4: Create sample data file (simulating download)"
+      copy:
+        content: |
+          {
+            "application": "{{ webapp_name }}",
+            "version": "{{ webapp_version }}",
+            "hostname": "{{ ansible_hostname }}",
+            "timestamp": "{{ ansible_date_time.iso8601 }}",
+            "system_info": {
+              "os": "{{ ansible_distribution }}",
+              "architecture": "{{ ansible_architecture }}",
+              "memory_mb": {{ ansible_memtotal_mb }},
+              "cpu_count": {{ ansible_processor_vcpus }}
+            },
+            "status": "active"
+          }
         dest: "/opt/{{ webapp_name }}/remote-data.json"
         mode: "0644"
-        force: no  # Only download if file doesn't exist or is different
-        timeout: 10
+        backup: yes
       register: file_download
-      ignore_errors: yes
       
     # PATTERN 5: Idempotent Service Management
     - name: "PATTERN 5: Ensure service configuration is current"
