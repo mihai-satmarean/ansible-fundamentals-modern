@@ -513,18 +513,9 @@ Create `advanced_templates.yml`:
         group: root
         mode: '0644'
         backup: yes
-        validate: 'nginx -t -c %s'
       register: nginx_config
       notify: restart nginx
       
-    - name: "Deploy filter demonstration page"
-      template:
-        src: filter_demo.html.j2
-        dest: /var/www/html/filters.html
-        owner: www-data
-        group: www-data
-        mode: '0644'
-      register: filter_demo
       
     - name: "Create SSL certificates (self-signed for demo)"
       shell: |
@@ -546,12 +537,8 @@ Create `advanced_templates.yml`:
           - Updated: {{ nginx_config.changed }}
           - Backup: {{ nginx_config.backup_file | default('None') }}
           
-          Filter Demo Page:
-          - Deployed: {{ filter_demo.changed }}
-          
           Access URLs:
           - Main page: http://{{ ansible_default_ipv4.address }}:{{ http_port | default(80) }}
-          - Filters demo: http://{{ ansible_default_ipv4.address }}:{{ http_port | default(80) }}/filters.html
           {% if ssl_enabled | default(false) %}
           - HTTPS: https://{{ ansible_default_ipv4.address }}:{{ https_port }}
           {% endif %}

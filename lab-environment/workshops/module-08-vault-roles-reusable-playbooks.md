@@ -28,7 +28,18 @@ Master Ansible Vault for secure data management, understand and create Ansible r
 ```bash
 mkdir -p ansible-vault-roles-lab
 cd ansible-vault-roles-lab
-mkdir -p {group_vars,host_vars,roles,playbooks,inventory}
+mkdir -p {roles,playbooks,inventory}
+mkdir -p inventory/group_vars/all
+mkdir -p playbooks/templates
+```
+
+### Complete Setup Commands
+```bash
+# Create all necessary directories with correct structure
+mkdir -p ansible-vault-roles-lab/{roles,playbooks,inventory}
+mkdir -p ansible-vault-roles-lab/inventory/group_vars/all
+mkdir -p ansible-vault-roles-lab/playbooks/templates
+cd ansible-vault-roles-lab
 ```
 
 ### Create Inventory
@@ -118,7 +129,13 @@ vault_external_apis:
 
 ### Create Public Variables
 
-Create `group_vars/all/main.yml`:
+**IMPORTANT**: Create the directory structure and file:
+
+```bash
+mkdir -p inventory/group_vars/all
+```
+
+Create `inventory/group_vars/all/main.yml`:
 
 ```yaml
 ---
@@ -179,6 +196,14 @@ Create `playbooks/vault_demo.yml`:
           Admin password complexity: {{ 'Strong' if admin_password | length > 10 else 'Weak' }}
           External APIs configured: {{ external_apis | length }}
           
+    - name: "Create application configuration directory"
+      file:
+        path: "/etc/{{ app_name }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+        
     - name: "Create secure configuration file"
       template:
         src: secure_config.j2
@@ -208,14 +233,6 @@ Create `playbooks/vault_demo.yml`:
         mode: '0600'
       register: db_users_config
       
-    - name: "Create application configuration directory"
-      file:
-        path: "/etc/{{ app_name }}"
-        state: directory
-        owner: root
-        group: root
-        mode: '0755'
-      
     - name: "Test external API connectivity"
       uri:
         url: "https://httpbin.org/headers"
@@ -244,7 +261,13 @@ Create `playbooks/vault_demo.yml`:
 
 ### Create Secure Configuration Template
 
-Create `templates/secure_config.j2`:
+**IMPORTANT**: Create the templates directory:
+
+```bash
+mkdir -p playbooks/templates
+```
+
+Create `playbooks/templates/secure_config.j2`:
 
 ```ini
 # Secure Configuration for {{ app_name | title }}
@@ -484,13 +507,16 @@ Create `playbooks/deploy_multiple_websites.yml`:
 
 ```bash
 # Create encrypted file
-ansible-vault create group_vars/all/vault.yml
+ansible-vault create inventory/group_vars/all/vault.yml
 
 # Edit encrypted file
-ansible-vault edit group_vars/all/vault.yml
+ansible-vault edit inventory/group_vars/all/vault.yml
 
 # Run playbook with vault
 ansible-playbook -i inventory/hosts.yml playbooks/vault_demo.yml --ask-vault-pass
+
+# Alternative: if you're in the project directory, you can use:
+ansible-playbook -i inventory/ playbooks/vault_demo.yml --ask-vault-pass
 ```
 
 ### Execute Role-Based Deployment
