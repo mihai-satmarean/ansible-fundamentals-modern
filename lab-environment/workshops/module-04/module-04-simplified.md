@@ -103,6 +103,8 @@ cat > step3-copy.yml << 'EOF'
 - name: Copy files and content
   hosts: aws
   become: yes
+  vars:
+    page_title: "Ansible Fundamentals Course - Advancements"
   
   tasks:
     - name: Create simple HTML page
@@ -111,7 +113,7 @@ cat > step3-copy.yml << 'EOF'
           <!DOCTYPE html>
           <html>
           <head>
-              <title>Ansible Fundamentals Course</title>
+              <title>{{ page_title }}</title>
               <style>
                   body { font-family: Arial, sans-serif; margin: 40px; background-color: #f0f8ff; }
                   .header { color: #2c3e50; text-align: center; }
@@ -121,7 +123,7 @@ cat > step3-copy.yml << 'EOF'
           </head>
           <body>
               <div class="content">
-                  <h1 class="header">Ansible Fundamentals Training</h1>
+                  <h1 class="header">{{ page_title }}</h1>
                   <h2 class="highlight">September 9-10, 2025</h2>
                   <h3>Welcome to ING Bank Ansible Training!</h3>
                   
