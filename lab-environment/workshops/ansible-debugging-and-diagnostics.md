@@ -401,7 +401,6 @@ ansible-lint broken-playbook.yml
 1. Missing colon after `packages`
 2. Wrong variable name in loop (`package_list` vs `packages`)
 3. Wrong comparison operator (`=` should be `==`)
-4. Wrong boolean value (`true` should be `yes`)
 
 **Fixed version:**
 ```yaml
@@ -424,7 +423,7 @@ ansible-lint broken-playbook.yml
       service:
         name: "{{ item }}"
         state: started
-        enabled: yes         # Fixed boolean
+        enabled: true        # Boolean values can be true/false or yes/no
       loop:
         - nginx
         - mysql

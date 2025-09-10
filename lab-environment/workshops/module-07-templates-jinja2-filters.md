@@ -25,28 +25,42 @@ Master Ansible templating using Jinja2, learn to use filters for data transforma
 ## Lab Setup
 
 ### Create Inventory
-Create `hosts.ini`:
+Create `hosts.yml`:
 
-```ini
-[webservers]
-web1 ansible_host=192.168.1.101 ansible_user=ansibleuser http_port=80 ssl_enabled=true
-web2 ansible_host=192.168.1.102 ansible_user=ansibleuser http_port=8080 ssl_enabled=false
-
-[databases]
-db1 ansible_host=192.168.1.103 ansible_user=ansibleuser db_type=postgresql
-
-[webservers:vars]
-server_role=web
-max_connections=1000
-
-[databases:vars]
-server_role=database
-max_connections=500
-
-[all:vars]
-ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-environment=production
-admin_email=admin@company.com
+```yaml
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+  children:
+    aws:
+      hosts:
+        16.171.52.223:
+          ansible_user: ubuntu
+        51.20.81.242:
+          ansible_user: ubuntu
+        51.20.83.179:
+          ansible_user: ubuntu
+      vars:
+        ansible_user: ubuntu
+        ansible_ssh_private_key_file: ~/.ssh/ansible_key
+        ansible_python_interpreter: /usr/bin/python3
+        ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+    
+    webservers:
+      hosts:
+        51.20.81.242:
+          ansible_user: ubuntu
+    
+    databases:
+      hosts:
+        51.20.83.179:
+          ansible_user: ubuntu
+    
+    loadbalancers:
+      hosts:
+        51.20.83.179:
+          ansible_user: ubuntu
 ```
 
 ### Create Templates Directory
