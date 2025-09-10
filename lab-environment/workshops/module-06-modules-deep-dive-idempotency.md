@@ -203,9 +203,16 @@ Create `module_deep_dive.yml`:
         group: root
         mode: "0644"
         backup: yes
-        validate: "nginx -t -c /etc/nginx/nginx.conf"
+        # For virtual host files, we validate the main nginx config after template is created
       register: nginx_template
       notify: restart nginx
+      
+    # Validate nginx configuration after template creation
+    - name: "VALIDATE: Test nginx configuration syntax"
+      command: nginx -t
+      register: nginx_syntax_check
+      failed_when: nginx_syntax_check.rc != 0
+      when: nginx_template is changed
       
     # STAT MODULE - Information Gathering
     - name: "STAT: Gather information about created resources"
@@ -370,17 +377,17 @@ Create `idempotency_test.yml`:
       copy:
         content: |
           # {{ test_app | upper }} Configuration
-          # This file demonstrates idempotency
+          # This file demonstrates idempotency - static content only
           
           app_name={{ test_app }}
           user={{ test_user }}
-          created={{ ansible_date_time.date }}
-          hostname={{ ansible_hostname }}
+          version=1.0
+          debug=false
           
-          # System Information
-          os={{ ansible_distribution }}
-          arch={{ ansible_architecture }}
-          memory={{ ansible_memtotal_mb }}MB
+          # Static System Configuration
+          max_connections=100
+          timeout=30
+          log_level=info
         dest: "{{ test_config }}"
         owner: "{{ test_user }}"
         mode: "0644"
