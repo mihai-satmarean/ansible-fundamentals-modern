@@ -215,13 +215,14 @@ ansible webservers -m service -a "name=nginx state=restarted"
 A role is a pre-organized collection of tasks, variables, and files that can be reused.
 
 **Role structure:**
+```bash
 webserver-role/
 ├── tasks/main.yml # <- Main tasks
 ├── vars/main.yml # <- Variables
 ├── files/ # <- Files to copy
 ├── templates/ # <- Template files
 └── handlers/main.yml # <- Event handlers
-
+```
 
 **When to create a role:**
 - When you find yourself copying the same tasks between playbooks
