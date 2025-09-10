@@ -323,7 +323,7 @@ Create `idempotency_test.yml`:
 ```yaml
 ---
 - name: Idempotency Testing and Demonstration
-  hosts: web_servers
+  hosts: aws
   become: yes
   vars:
     test_app: "idempotency-test"
