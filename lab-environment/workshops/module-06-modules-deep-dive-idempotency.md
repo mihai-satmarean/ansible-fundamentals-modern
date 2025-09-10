@@ -48,12 +48,12 @@ Create `module_deep_dive.yml`:
 ```yaml
 ---
 - name: Deep Dive into Ansible Modules
-  hosts: web_servers
+  hosts: aws
   become: yes
   vars:
     app_name: "webapp"
     app_user: "webuser"
-    app_group: "webgroup"
+    app_group: "webadmin"
     config_dir: "/etc/webapp"
     
   tasks:
