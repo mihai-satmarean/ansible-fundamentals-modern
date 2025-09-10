@@ -336,6 +336,7 @@ ansible webservers -m service -a "name=nginx state=restarted"
 - Verify results after running playbooks
 
 ## Decision Tree: What Should I Use?
+```bash
 Do I need to do just ONE thing quickly?
 ├── YES → Use an ad-hoc command (single task)
 └── NO → Continue
@@ -348,9 +349,10 @@ Do I have reusable patterns I use often?
 Do I want to distribute a complete automation solution?
 ├── YES → Create a collection
 └── NO → Stick with playbooks
+````
 
 Decision tree:
-
+```mermaid
 flowchart TD
     START([Start: I need to automate something]) --> Q1{Do I need to do just ONE thing quickly?}
     
@@ -399,9 +401,11 @@ flowchart TD
     class Q1,Q2,Q3,Q4,Q5,Q6,Q7 question
     class ADHOC,TASK,PLAYBOOK,ROLE,COLLECTION solution
     class EX1,EX2,EX3,EX4 example
-
+```
 
 Simplified Decision tree:
+
+```mermaid
 flowchart TD
     START([What do I want to do?]) --> SIMPLE{Something simple<br/>and quick?}
     
@@ -426,8 +430,10 @@ flowchart TD
     class START start
     class SIMPLE,QUICK,COMPLEX,REUSE,SHARE question
     class ADHOC,TASK,PLAYBOOK,ROLE,COLLECTION answer
+````
 
 What we do:
+```mermaid
 flowchart TD
     START([I need to...]) --> EX1{Restart a service<br/>on all servers?}
     EX1 -->|YES| A1[Ad-hoc Command<br/>ansible all -m service<br/>-a 'name=nginx state=restarted']
@@ -462,8 +468,10 @@ flowchart TD
     class P1,LEVEL2 medium
     class R1,LEVEL3 complex
     class C1,LEVEL4 advanced
+````
 
 Learning path:
+```mermaid
 flowchart LR
     subgraph "Learning Journey"
         WEEK1[Week 1<br/>Learn Tasks & Ad-hoc]
@@ -493,6 +501,7 @@ flowchart LR
     class WEEK1,WEEK2,MONTH2,MONTH6 learning
     class DECISION1,DECISION2,DECISION3 decision
     class USE1,USE2,USE3,USE4 action
+```
 
 ## Summary
 
