@@ -40,6 +40,423 @@ db1 ansible_host=192.168.1.103 ansible_user=ansibleuser
 [all:vars]
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ```
+## Variables - Storing Information
+
+Variables are like boxes where you store information to use later.
+
+### Why Use Variables?
+
+1. **Avoid repetition** - Write once, use many times
+2. **Easy changes** - Change in one place, updates everywhere
+3. **Make code flexible** - Same code works in different situations
+
+### Simple Variables
+
+```yaml
+vars:
+  web_package: nginx
+  web_port: 80
+  admin_user: webadmin
+
+tasks:
+  - name: Install web server
+    apt:
+      name: "{{ web_package }}"
+      state: present
+```
+
+### List Variables
+
+When you have multiple items of the same type:
+
+```yaml
+
+vars:
+  packages:
+    - nginx
+    - mysql-server
+    - php
+  
+tasks:
+  - name: Install packages
+    apt:
+      name: "{{ item }}"
+      state: present
+    loop: "{{ packages }}"
+```
+
+### Dictionary Variables
+
+When you have related information grouped together:
+
+```yaml
+vars:
+  database:
+    name: myapp
+    user: dbuser
+    password: secret123
+    
+tasks:
+  - name: Create database
+    mysql_db:
+      name: "{{ database.name }}"
+      state: present
+```
+
+## Loops - Doing Things Multiple Times
+
+Instead of writing the same task many times, use loops.
+
+```mermaid
+flowchart TD
+    START([Start Loop]) --> ITEM1[Process folder1]
+    ITEM1 --> ITEM2[Process folder2]
+    ITEM2 --> ITEM3[Process folder3]
+    ITEM3 --> END([Loop Complete])
+    
+    classDef loopItem fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    class ITEM1,ITEM2,ITEM3 loopItem
+```
+
+### Basic Loop
+
+```yaml
+- name: Create directories
+  file:
+    path: "/tmp/{{ item }}"
+    state: directory
+  loop:
+    - folder1
+    - folder2
+    - folder3
+```
+
+### Loop with Dictionary
+
+```mermaid
+flowchart TD
+    START([Start Dictionary Loop]) --> USER1[Create john<br/>group: admin<br/>shell: /bin/bash]
+    USER1 --> USER2[Create alice<br/>group: users<br/>shell: /bin/zsh]
+    USER2 --> END([All Users Created])
+    
+    classDef userTask fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    class USER1,USER2 userTask
+```
+
+```yaml
+- name: Create users with details
+  user:
+    name: "{{ item.name }}"
+    group: "{{ item.group }}"
+    shell: "{{ item.shell }}"
+  loop:
+    - { name: john, group: admin, shell: /bin/bash }
+    - { name: alice, group: users, shell: /bin/zsh }
+```
+
+## Conditions - Making Decisions
+
+Run tasks only when certain conditions are true.
+
+```mermaid
+flowchart TD
+    START([Start Task]) --> CHECK{Is system Ubuntu?}
+    CHECK -->|Yes| INSTALL[Install nginx]
+    CHECK -->|No| SKIP[Skip task]
+    INSTALL --> END([Task Complete])
+    SKIP --> END
+    
+    classDef condition fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef action fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef skip fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class CHECK condition
+    class INSTALL action
+    class SKIP skip
+```
+
+### Simple Condition
+
+```yaml
+- name: Install nginx (Ubuntu only)
+  apt:
+    name: nginx
+    state: present
+  when: ansible_distribution == "Ubuntu"
+```
+
+### Multiple Conditions
+
+```mermaid
+flowchart TD
+    START([Start Task]) --> CHECK1{Is system Ubuntu?}
+    CHECK1 -->|No| SKIP[Skip task]
+    CHECK1 -->|Yes| CHECK2{Memory > 2GB?}
+    CHECK2 -->|No| SKIP
+    CHECK2 -->|Yes| INSTALL[Install mysql-server]
+    INSTALL --> END([Task Complete])
+    SKIP --> END
+    
+    classDef condition fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef action fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef skip fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class CHECK1,CHECK2 condition
+    class INSTALL action
+    class SKIP skip
+```
+
+```yaml
+- name: Install heavy software
+  apt:
+    name: mysql-server
+    state: present
+  when:
+    - ansible_distribution == "Ubuntu"
+    - ansible_memtotal_mb > 2048
+```
+
+## Practice: Converting Ideas
+
+### Exercise 1
+**Idea:** "Install git, vim, and htop on Ubuntu servers only"
+
+**Your pseudocode:**
+
+
+
+
+**Solution pseudocode:**
+```bash
+IF system is Ubuntu:
+INSTALL git
+INSTALL vim
+INSTALL htop
+```
+
+**Ansible solution:**
+```yaml
+- name: Install development tools
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - git
+    - vim
+    - htop
+  when: ansible_distribution == "Ubuntu"
+```
+
+**Flow diagram:**
+```mermaid
+flowchart TD
+    START([Start]) --> CHECK{Is Ubuntu?}
+    CHECK -->|No| SKIP[Skip all packages]
+    CHECK -->|Yes| LOOP([Start Loop])
+    LOOP --> GIT[Install git]
+    GIT --> VIM[Install vim]
+    VIM --> HTOP[Install htop]
+    HTOP --> END([Complete])
+    SKIP --> END
+    
+    classDef condition fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef action fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef skip fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class CHECK condition
+    class GIT,VIM,HTOP action
+    class SKIP skip
+```
+
+### Exercise 2
+**Idea:** "Create 3 directories: logs, configs, and backups with proper permissions"
+
+**Your pseudocode:**
+
+
+
+**Solution pseudocode:**
+```bash
+LIST directories = [logs, configs, backups]
+FOR each directory IN directories:
+CREATE directory /var/{{ directory }}
+SET permissions to 755
+```
+
+
+**Ansible solution:**
+```yaml
+vars:
+  directories:
+    - logs
+    - configs
+    - backups
+
+tasks:
+  - name: Create application directories
+    file:
+      path: "/var/{{ item }}"
+      state: directory
+      mode: '0755'
+    loop: "{{ directories }}"
+```
+
+**Flow diagram:**
+```mermaid
+flowchart TD
+    START([Start Loop]) --> DIR1[Create /var/logs<br/>mode: 755]
+    DIR1 --> DIR2[Create /var/configs<br/>mode: 755]
+    DIR2 --> DIR3[Create /var/backups<br/>mode: 755]
+    DIR3 --> END([All Directories Created])
+    
+    classDef dirTask fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    class DIR1,DIR2,DIR3 dirTask
+```
+
+## Common Patterns
+
+### Pattern 1: Install and Start Service
+```yaml
+vars:
+  service_name: nginx
+  
+tasks:
+  - name: Install service
+    apt:
+      name: "{{ service_name }}"
+      state: present
+      
+  - name: Start service
+    service:
+      name: "{{ service_name }}"
+      state: started
+      enabled: yes
+```
+
+### Pattern 2: Copy Configuration Files
+```yaml
+vars:
+  config_files:
+    - nginx.conf
+    - php.ini
+    - mysql.conf
+    
+tasks:
+  - name: Copy configuration files
+    copy:
+      src: "{{ item }}"
+      dest: "/etc/{{ item }}"
+      backup: yes
+    loop: "{{ config_files }}"
+```
+
+### Pattern 3: Conditional Installation
+
+```mermaid
+flowchart TD
+    START([Start Loop]) --> PKG1{nginx: Is webserver?}
+    PKG1 -->|Yes| INSTALL1[Install nginx]
+    PKG1 -->|No| PKG2{mysql: Is database?}
+    INSTALL1 --> PKG2
+    PKG2 -->|Yes| INSTALL2[Install mysql-server]
+    PKG2 -->|No| END([Loop Complete])
+    INSTALL2 --> END
+    
+    classDef condition fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef action fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    
+    class PKG1,PKG2 condition
+    class INSTALL1,INSTALL2 action
+```
+
+```yaml
+vars:
+  packages:
+    - name: nginx
+      condition: "{{ 'webserver' in group_names }}"
+    - name: mysql-server
+      condition: "{{ 'database' in group_names }}"
+      
+tasks:
+  - name: Install role-specific packages
+    apt:
+      name: "{{ item.name }}"
+      state: present
+    loop: "{{ packages }}"
+    when: item.condition
+```
+
+## Tips for Beginners
+
+1. **Start simple** - Begin with basic tasks, add complexity gradually
+2. **Use descriptive names** - Make variable and task names clear
+3. **Test small changes** - Don't write huge playbooks at once
+4. **Use pseudocode first** - Plan before coding
+5. **Keep variables organized** - Group related variables together
+
+## Quick Reference
+
+### Variable Usage
+```yaml
+# Define
+vars:
+  my_variable: value
+  
+# Use  
+"{{ my_variable }}"
+```
+
+### Loop Usage
+```yaml
+loop:
+  - item1
+  - item2
+```
+
+### Condition Usage
+```yaml
+when: condition_is_true
+```
+
+### Combining All Three
+
+```mermaid
+flowchart TD
+    START([Start]) --> VARS[Variables: packages = git, vim]
+    VARS --> CHECK{Is Ubuntu?}
+    CHECK -->|No| SKIP[Skip entire task]
+    CHECK -->|Yes| LOOP([Start Loop])
+    LOOP --> GIT[Install git]
+    GIT --> VIM[Install vim]
+    VIM --> END([Complete])
+    SKIP --> END
+    
+    classDef variable fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef condition fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef action fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef skip fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class VARS variable
+    class CHECK condition
+    class GIT,VIM action
+    class SKIP skip
+```
+
+```yaml
+vars:
+  packages: [git, vim]
+  
+tasks:
+  - name: Install packages on Ubuntu
+    apt:
+      name: "{{ item }}"
+      state: present
+    loop: "{{ packages }}"
+    when: ansible_distribution == "Ubuntu"
+```
+
+Remember: Think in pseudocode first, then translate to Ansible. Start simple and build complexity gradually.
+
 
 ## Lab 1: Basic Facts and Variables
 
