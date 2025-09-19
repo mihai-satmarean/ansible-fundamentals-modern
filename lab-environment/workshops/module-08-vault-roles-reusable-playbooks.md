@@ -93,12 +93,13 @@ all:
 
 ```bash
 # Create encrypted file for sensitive data
+cd inventory
 ansible-vault create group_vars/all/vault.yml
 ```
 
 When prompted for password, use: `SecureVaultPassword123!`
 
-Add this content to `vault.yml`:
+Add this content to `vault.yml` similar with vi editor:
 
 ```yaml
 ---
