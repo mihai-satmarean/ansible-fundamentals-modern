@@ -345,6 +345,22 @@ session_secret={{ api_key | hash('md5') }}
 
 ### Create Simple NGINX Role
 
+# From root folder of the project 
+In order for the role to be found by ansible we might need to create an anible.cfg in the root of the project
+```bash
+cat > ansible.cfg << 'EOF'
+[defaults]
+inventory = inventory/hosts.yml
+roles_path = /home/ubuntu/ansible-vault-roles-lab/roles/
+host_key_checking = False
+stdout_callback = yaml
+
+[ssh_connection]
+ssh_args = -o StrictHostKeyChecking=no
+pipelining = True
+EOF
+```
+
 ```bash
 # Create role directory structure
 cd ansible-vault-roles-lab
