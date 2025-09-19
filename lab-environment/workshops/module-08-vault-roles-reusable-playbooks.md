@@ -347,7 +347,7 @@ session_secret={{ api_key | hash('md5') }}
 
 ```bash
 # Create role directory structure
-cd ansible-vault-roles-lab/roles/
+cd ansible-vault-roles-lab
 ansible-galaxy init roles/nginx_website
 ```
 
