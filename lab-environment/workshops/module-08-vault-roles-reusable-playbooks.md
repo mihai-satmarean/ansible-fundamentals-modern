@@ -528,41 +528,6 @@ Create `playbooks/deploy_website.yml`:
           You can now visit: http://{{ ansible_default_ipv4.address }}/
 ```
 
-### Create Multiple Website Playbook
-
-Create `playbooks/deploy_multiple_websites.yml`:
-
-```yaml
----
-- name: Deploy Multiple Websites with Different Content
-  hosts: webservers
-  become: yes
-  
-  tasks:
-    - name: "Deploy Company Website"
-      include_role:
-        name: nginx_website
-      vars:
-        website_title: "Company Website"
-        website_content: "Welcome to our company!"
-        web_directory: "/var/www/company"
-        
-    - name: "Deploy Blog Website"
-      include_role:
-        name: nginx_website
-      vars:
-        website_title: "Company Blog"
-        website_content: "Read our latest blog posts!"
-        web_directory: "/var/www/blog"
-        
-    - name: "Display all websites"
-      debug:
-        msg: |
-          === MULTIPLE WEBSITES DEPLOYED ===
-          
-          Company Site: http://{{ ansible_default_ipv4.address }}/company/
-          Blog Site: http://{{ ansible_default_ipv4.address }}/blog/
-```
 
 ## Running the Labs
 
