@@ -89,6 +89,51 @@ all:
 
 ## Lab 1: Ansible Vault Fundamentals
 
+```mermaid
+graph TB
+    subgraph "Development Environment"
+        Dev[👨‍💻 Developer]
+        Plain[📄 Plain Text Secrets<br/>passwords, API keys]
+    end
+    
+    subgraph "Ansible Vault Process"
+        VaultCmd[🔐 ansible-vault encrypt]
+        VaultPass[🔑 Vault Password<br/>SecureVaultPassword123!]
+        Encrypted[🔒 Encrypted Variables<br/>$ANSIBLE_VAULT;1.1;AES256...]
+    end
+    
+    subgraph "Version Control"
+        Git[📚 Git Repository<br/>Safe to commit encrypted files]
+    end
+    
+    subgraph "Playbook Execution"
+        Playbook[📋 Playbook]
+        AskPass[❓ --ask-vault-pass]
+        Decrypt[🔓 Runtime Decryption]
+        Target[🎯 Target Hosts<br/>Plain text in memory only]
+    end
+    
+    Dev --> Plain
+    Plain --> VaultCmd
+    VaultPass --> VaultCmd
+    VaultCmd --> Encrypted
+    Encrypted --> Git
+    
+    Git --> Playbook
+    Playbook --> AskPass
+    VaultPass --> AskPass
+    AskPass --> Decrypt
+    Decrypt --> Target
+    
+    classDef secure fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
+    classDef danger fill:#ffebee,stroke:#f44336,stroke-width:2px
+    classDef process fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+    
+    class VaultCmd,Encrypted,Git,Decrypt secure
+    class Plain danger
+    class Playbook,AskPass,Target process
+```
+
 ### Create Encrypted Variables
 
 ```bash
